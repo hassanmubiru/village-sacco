@@ -151,11 +151,10 @@ export function LoanManagement() {
   const handleRepayment = async (loanId: string, amount: number) => {
     try {
       // Convert to wei (18 decimals)
-      const amountInWei = (amount * 10**18).toString();
+      const amountInWei = (amount * Math.pow(10, 18)).toString();
       
       const tx = await repayLoan({
-        args: [loanId],
-        value: amountInWei,
+        args: [loanId, amountInWei],
       });
 
       toast.success('Loan repayment successful!');
