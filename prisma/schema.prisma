@@ -1,0 +1,147 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Member {
+  id              String   @id @default(cuid())
+  walletAddress   String   @unique
+  name            String
+  email           String   @unique
+  phone           String?
+  nationalId      String?  @unique
+  isActive        Boolean  @default(true)
+  isApproved      Boolean  @default(false)
+  membershipDate  DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  savings         Saving[]
+  loans           Loan[]
+  transactions    Transaction[]
+  votes           Vote[]
+
+  @@map("members")
+}
+
+model Saving {
+  id            String   @id @default(cuid())
+  memberId      String
+  amount        Decimal  @db.Decimal(18, 2)
+  transactionHash String?
+  blockNumber   Int?
+  createdAt     DateTime @default(now())
+
+  // Relations
+  member        Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@map("savings")
+}
+
+model Loan {
+  id              String      @id @default(cuid())
+  memberId        String
+  amount          Decimal     @db.Decimal(18, 2)
+  interestRate    Decimal     @db.Decimal(5, 2)
+  duration        Int         // in months
+  purpose         String
+  status          LoanStatus  @default(PENDING)
+  appliedAt       DateTime    @default(now())
+  approvedAt      DateTime?
+  disbursedAt     DateTime?
+  transactionHash String?
+  blockNumber     Int?
+
+  // Relations
+  member          Member      @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  repayments      Repayment[]
+
+  @@map("loans")
+}
+
+model Repayment {
+  id              String   @id @default(cuid())
+  loanId          String
+  amount          Decimal  @db.Decimal(18, 2)
+  transactionHash String?
+  blockNumber     Int?
+  createdAt       DateTime @default(now())
+
+  // Relations
+  loan            Loan     @relation(fields: [loanId], references: [id], onDelete: Cascade)
+
+  @@map("repayments")
+}
+
+model Transaction {
+  id              String          @id @default(cuid())
+  memberId        String
+  type            TransactionType
+  amount          Decimal         @db.Decimal(18, 2)
+  description     String
+  transactionHash String?
+  blockNumber     Int?
+  createdAt       DateTime        @default(now())
+
+  // Relations
+  member          Member          @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@map("transactions")
+}
+
+model Proposal {
+  id          String         @id @default(cuid())
+  title       String
+  description String
+  proposerId  String
+  status      ProposalStatus @default(ACTIVE)
+  createdAt   DateTime       @default(now())
+  expiresAt   DateTime
+
+  // Relations
+  votes       Vote[]
+
+  @@map("proposals")
+}
+
+model Vote {
+  id         String   @id @default(cuid())
+  proposalId String
+  memberId   String
+  vote       Boolean  // true for yes, false for no
+  createdAt  DateTime @default(now())
+
+  // Relations
+  proposal   Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  member     Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@unique([proposalId, memberId])
+  @@map("votes")
+}
+
+enum LoanStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  DISBURSED
+  REPAID
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  LOAN_DISBURSEMENT
+  LOAN_REPAYMENT
+}
+
+enum ProposalStatus {
+  ACTIVE
+  PASSED
+  REJECTED
+  EXPIRED
+}
