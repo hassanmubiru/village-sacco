@@ -1,0 +1,3 @@
+http://localhost:3000 - Dashboard
+http://localhost:3000/admin - Admin panel
+http://localhost:3000/savings - Savings management

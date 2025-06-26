@@ -2,8 +2,6 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
-import { useAddress } from '@thirdweb-dev/react';
-import { useSaccoContract } from '@/hooks/use-sacco-contract';
 
 interface AuthContextType {
   isConnected: boolean;
@@ -23,9 +21,7 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const { ready, authenticated } = usePrivy();
-  const address = useAddress();
-  const { getMemberInfo, contract } = useSaccoContract();
+  const { ready, authenticated, user } = usePrivy();
   
   const [isLoading, setIsLoading] = useState(true);
   const [memberInfo, setMemberInfo] = useState(null);
@@ -33,8 +29,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isApprovedMember, setIsApprovedMember] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
+  // Get user's wallet address
+  const userAddress = user?.wallet?.address || null;
+
   const refreshMemberInfo = async () => {
-    if (!address || !contract) {
+    if (!userAddress) {
       setMemberInfo(null);
       setIsMember(false);
       setIsApprovedMember(false);
@@ -45,29 +44,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       setIsLoading(true);
       
-      // Get member info
-      const info = await getMemberInfo(address);
-      setMemberInfo(info);
+      // Mock member info for now - replace with actual API call
+      const mockMemberInfo = {
+        name: 'John Doe',
+        email: 'john@example.com',
+        isApproved: true,
+        totalSavings: BigInt(1000 * 10**18), // 1000 ETH in wei
+        totalLoansAmount: BigInt(0),
+        registrationDate: BigInt(Date.now() / 1000)
+      };
       
-      if (info) {
-        setIsMember(true);
-        setIsApprovedMember(info.isApproved);
-      } else {
-        setIsMember(false);
-        setIsApprovedMember(false);
-      }
-
-      // Check if user is admin
-      try {
-        const adminRole = await contract.call("ADMIN_ROLE");
-        const hasAdminRole = await contract.call("hasRole", [adminRole, address]);
-        setIsAdmin(hasAdminRole);
-      } catch (error) {
-        console.error("Error checking admin role:", error);
-        setIsAdmin(false);
-      }
+      setMemberInfo(mockMemberInfo);
+      setIsMember(true);
+      setIsApprovedMember(mockMemberInfo.isApproved);
+      
+      // Mock admin check - replace with actual role check
+      setIsAdmin(userAddress.toLowerCase().includes('admin'));
+      
     } catch (error) {
-      console.error("Error refreshing member info:", error);
+      console.error('Error refreshing member info:', error);
       setMemberInfo(null);
       setIsMember(false);
       setIsApprovedMember(false);
@@ -81,11 +76,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     if (ready) {
       refreshMemberInfo();
     }
-  }, [ready, authenticated, address, contract]);
+  }, [ready, authenticated, userAddress]);
 
   const value: AuthContextType = {
-    isConnected: ready && authenticated && !!address,
-    userAddress: address || null,
+    isConnected: ready && authenticated && !!userAddress,
+    userAddress,
     isLoading,
     isMember,
     isApprovedMember,
