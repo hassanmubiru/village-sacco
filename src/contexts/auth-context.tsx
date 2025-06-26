@@ -24,12 +24,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const { ready, authenticated, user } = usePrivy();
   
   const [isLoading, setIsLoading] = useState(true);
+<<<<<<< HEAD
   const [memberInfo, setMemberInfo] = useState(null);
+=======
+  const [memberInfo, setMemberInfo] = useState<{
+    name: string;
+    email: string;
+    isApproved: boolean;
+    totalSavings: bigint;
+    totalLoansAmount: bigint;
+    registrationDate: bigint;
+  } | null>(null);
+>>>>>>> af4cee5 (Please enter the commit message for your changes. Lines starting)
   const [isMember, setIsMember] = useState(false);
   const [isApprovedMember, setIsApprovedMember] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
+<<<<<<< HEAD
   // Get user's wallet address
+=======
+  // Get user's wallet address from Privy
+>>>>>>> af4cee5 (Please enter the commit message for your changes. Lines starting)
   const userAddress = user?.wallet?.address || null;
 
   const refreshMemberInfo = async () => {
@@ -38,18 +53,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setIsMember(false);
       setIsApprovedMember(false);
       setIsAdmin(false);
+<<<<<<< HEAD
+=======
+      setIsLoading(false);
+>>>>>>> af4cee5 (Please enter the commit message for your changes. Lines starting)
       return;
     }
 
     try {
       setIsLoading(true);
       
+<<<<<<< HEAD
       // Mock member info for now - replace with actual API call
       const mockMemberInfo = {
         name: 'John Doe',
         email: 'john@example.com',
         isApproved: true,
         totalSavings: BigInt(1000 * 10**18), // 1000 ETH in wei
+=======
+      // Mock member info - replace with actual API call
+      const mockMemberInfo = {
+        name: 'John Doe',
+        email: user?.email?.address || 'john@example.com',
+        isApproved: true,
+        totalSavings: BigInt(1000 * 10**18),
+>>>>>>> af4cee5 (Please enter the commit message for your changes. Lines starting)
         totalLoansAmount: BigInt(0),
         registrationDate: BigInt(Date.now() / 1000)
       };
@@ -58,8 +86,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setIsMember(true);
       setIsApprovedMember(mockMemberInfo.isApproved);
       
+<<<<<<< HEAD
       // Mock admin check - replace with actual role check
       setIsAdmin(userAddress.toLowerCase().includes('admin'));
+=======
+      // Mock admin check
+      setIsAdmin(userAddress.toLowerCase().includes('1234'));
+>>>>>>> af4cee5 (Please enter the commit message for your changes. Lines starting)
       
     } catch (error) {
       console.error('Error refreshing member info:', error);

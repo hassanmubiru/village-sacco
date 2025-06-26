@@ -1,6 +1,10 @@
 'use client';
 
+<<<<<<< HEAD
 import { useEffect, useState } from 'react';
+=======
+import { useEffect, useState, Suspense, lazy } from 'react';
+>>>>>>> af4cee5 (Please enter the commit message for your changes. Lines starting)
 import { useAuth } from '@/contexts/auth-context';
 import { useSaccoContract } from '@/hooks/use-sacco-contract';
 import { Navigation } from '@/components/navigation';
@@ -19,9 +23,21 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
+<<<<<<< HEAD
 import { MemberRegistration } from '@/components/sacco/member-registration';
 import { ConnectWallet } from '@/components/connect-wallet';
 
+=======
+import { ConnectWallet } from '@/components/connect-wallet';
+
+// Lazy load heavy components
+const MemberRegistration = lazy(() => 
+  import('@/components/sacco/member-registration').then(module => ({ 
+    default: module.MemberRegistration 
+  }))
+);
+
+>>>>>>> af4cee5 (Please enter the commit message for your changes. Lines starting)
 export default function DashboardPage() {
   const { 
     isConnected, 
