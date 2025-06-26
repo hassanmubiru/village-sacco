@@ -12,8 +12,14 @@ interface ProvidersProps {
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 60 * 1000,
-      retry: 3,
+      staleTime: 5 * 60 * 1000, // 5 minutes - better caching
+      gcTime: 10 * 60 * 1000, // 10 minutes
+      retry: 1, // Reduce retries for faster failures
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+    },
+    mutations: {
+      retry: 1,
     },
   },
 });

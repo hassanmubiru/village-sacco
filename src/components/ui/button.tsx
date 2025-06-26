@@ -36,7 +36,7 @@ export interface ButtonProps
 }
 
 <<<<<<< HEAD
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 =======
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 >>>>>>> af4cee5 (Please enter the commit message for your changes. Lines starting)
