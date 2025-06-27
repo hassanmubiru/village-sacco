@@ -155,6 +155,7 @@ export function LoanManagement() {
       
       const tx = await repayLoan({
         args: [loanId, amountInWei],
+        value: amountInWei,
       });
 
       toast.success('Loan repayment successful!');

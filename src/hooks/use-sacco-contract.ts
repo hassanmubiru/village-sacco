@@ -1,16 +1,41 @@
 'use client';
 
 import { useState } from 'react';
-import { useReadContract, useWriteContract, useAccount } from 'wagmi';
 import { VILLAGE_SACCO_ABI, type MemberInfo, type LoanInfo, type ProposalInfo } from '@/lib/contract-abi';
 import { saccoFactory } from '@/lib/contract-factory';
+
+// Safe wagmi imports with fallbacks
+let useReadContract: any, useWriteContract: any, useAccount: any;
+
+try {
+  const wagmi = require('wagmi');
+  useReadContract = wagmi.useReadContract;
+  useWriteContract = wagmi.useWriteContract;
+  useAccount = wagmi.useAccount;
+} catch (error) {
+  // Provide mock functions if wagmi is not available (e.g., during SSR)
+  useReadContract = () => ({ data: undefined, error: null, isLoading: false });
+  useWriteContract = () => ({ writeContract: () => Promise.resolve(), isPending: false });
+  useAccount = () => ({ address: undefined, isConnected: false });
+}
 
 const SACCO_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_SACCO_CONTRACT_ADDRESS as `0x${string}`;
 
 export function useSaccoContract() {
   const [isLoading, setIsLoading] = useState(false);
-  const { writeContract } = useWriteContract();
-  const { address } = useAccount();
+  
+  // Safe hook calls with fallbacks
+  let writeContract: any, address: any;
+  
+  try {
+    const writeContractHook = useWriteContract();
+    const accountHook = useAccount();
+    writeContract = writeContractHook.writeContract;
+    address = accountHook.address;
+  } catch (error) {
+    writeContract = () => Promise.resolve();
+    address = undefined;
+  }
 
   // Mock contract data for development
   const contractBalance = BigInt(10000 * 10**18); // 10,000 ETH
@@ -94,7 +119,7 @@ export function useSaccoContract() {
     }
   };
 
-  const repayLoan = async ({ args, value }: { args: [string], value: string }) => {
+  const repayLoan = async ({ args, value }: { args: [string, string], value?: string }) => {
     setIsLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 2000));

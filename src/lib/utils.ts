@@ -5,16 +5,29 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatCurrency(amount: number | string): string {
-  const num = typeof amount === 'string' ? parseFloat(amount) : amount;
+export function formatCurrency(amount: number | string | bigint): string {
+  let num: number;
+  if (typeof amount === 'bigint') {
+    // Convert from wei to ETH (divide by 10^18)
+    num = Number(amount) / (10 ** 18);
+  } else {
+    num = typeof amount === 'string' ? parseFloat(amount) : amount;
+  }
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
   }).format(num);
 }
 
-export function formatDate(date: Date | string): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
+export function formatDate(date: Date | string | number): string {
+  let d: Date;
+  if (typeof date === 'string') {
+    d = new Date(date);
+  } else if (typeof date === 'number') {
+    d = new Date(date * 1000); // Convert timestamp to milliseconds
+  } else {
+    d = date;
+  }
   return new Intl.DateTimeFormat('en-US', {
     year: 'numeric',
     month: 'long',

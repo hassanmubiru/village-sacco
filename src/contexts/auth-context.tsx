@@ -24,16 +24,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const { ready, authenticated, user } = usePrivy();
   
   const [isLoading, setIsLoading] = useState(true);
-  type MemberInfo = {
+  interface MemberInfo {
     name: string;
     email: string;
     isApproved: boolean;
     totalSavings: bigint;
     totalLoansAmount: bigint;
     registrationDate: bigint;
-  } | null;
+  }
 
-  const [memberInfo, setMemberInfo] = useState<MemberInfo>(null);
+  const [memberInfo, setMemberInfo] = useState<MemberInfo | null>(null);
   const [isMember, setIsMember] = useState(false);
   const [isApprovedMember, setIsApprovedMember] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
