@@ -34,9 +34,7 @@ const nextConfig = {
     removeConsole: process.env.NODE_ENV === 'production' ? {
       exclude: ['error', 'warn'],
     } : false,
-  },
-  
-  // Experimental features for Next.js 15
+  },    // Experimental features for Next.js 15
   experimental: {
     optimizePackageImports: [
       'lucide-react', 
@@ -44,15 +42,17 @@ const nextConfig = {
       'date-fns',
       'recharts'
     ],
-    
-    turbo: {
-      rules: {
-        '*.svg': {
-          loaders: ['@svgr/webpack'],
-          as: '*.js',
-        },
+  },
+  
+  // Turbopack configuration (moved from experimental.turbo)
+  turbopack: {
+    rules: {
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.js',
       },
     },
+  },
     
     serverActions: {
       allowedOrigins: ['localhost:3000'],
