@@ -24,24 +24,21 @@ const nextConfig = {
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
   },
   
-  // Performance optimizations
-  compiler: {
-    removeConsole: process.env.NODE_ENV === 'production', // Remove console in production
-  },
-  
   // Compiler optimizations
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production' ? {
       exclude: ['error', 'warn'],
     } : false,
-  },    // Experimental features for Next.js 15
+  },
+  
+  // Experimental features for Next.js 15
   experimental: {
     optimizePackageImports: [
       'lucide-react', 
       '@radix-ui/react-icons',
       'date-fns',
       'recharts'
-    ],
+    ]
   },
   
   // Turbopack configuration (moved from experimental.turbo)
@@ -50,13 +47,8 @@ const nextConfig = {
       '*.svg': {
         loaders: ['@svgr/webpack'],
         as: '*.js',
-      },
-    },
-  },
-    
-    serverActions: {
-      allowedOrigins: ['localhost:3000'],
-    },
+      }
+    }
   },
   
   // Webpack configuration with proper parameter handling
@@ -113,8 +105,8 @@ const nextConfig = {
           {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=()',
-          },
-        ],
+          }
+        ]
       },
       {
         source: '/api/(.*)',
@@ -122,9 +114,9 @@ const nextConfig = {
           {
             key: 'Cache-Control',
             value: 'no-store, must-revalidate',
-          },
-        ],
-      },
+          }
+        ]
+      }
     ];
   },
 
@@ -134,7 +126,7 @@ const nextConfig = {
 
   async rewrites() {
     return [];
-  },
+  }
 };
 
 // Export with bundle analyzer wrapper
