@@ -1,12 +1,62 @@
+// This is an alternative schema configuration using SQLite for development
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
+// Enums
+enum Role {
+  MEMBER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  LOAN_DISBURSEMENT
+  LOAN_REPAYMENT
+  FEE
+  INTEREST
+}
+
+enum LoanStatus {
+  PENDING
+  APPROVED
+  DISBURSED
+  REPAYING
+  COMPLETED
+  REJECTED
+  DEFAULTED
+}
+
+enum ProposalStatus {
+  ACTIVE
+  PASSED
+  REJECTED
+  IMPLEMENTED
+}
+
+enum ProposalType {
+  LOAN_TERMS
+  MEMBERSHIP_REQUIREMENTS
+  INTEREST_RATE
+  FEE_STRUCTURE
+  LEADERSHIP
+  OTHER
+}
+
+enum VoteOption {
+  YES
+  NO
+  ABSTAIN
+}
+
+// Base models
 model Member {
   id              String   @id @default(cuid())
   walletAddress   String   @unique
@@ -16,6 +66,7 @@ model Member {
   nationalId      String?  @unique
   isActive        Boolean  @default(true)
   isApproved      Boolean  @default(false)
+  role            Role     @default(MEMBER)
   membershipDate  DateTime @default(now())
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -25,123 +76,143 @@ model Member {
   loans           Loan[]
   transactions    Transaction[]
   votes           Vote[]
+  proposals       Proposal[]
+  adminLogs       AdminLog[]
 
   @@map("members")
 }
 
 model Saving {
-  id            String   @id @default(cuid())
-  memberId      String
-  amount        Decimal  @db.Decimal(18, 2)
-  transactionHash String?
-  blockNumber   Int?
-  createdAt     DateTime @default(now())
-
+  id              String    @id @default(cuid())
+  amount          Float
+  description     String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
   // Relations
-  member        Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
-
+  member          Member    @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  memberId        String
+  
+  @@index([memberId])
   @@map("savings")
 }
 
 model Loan {
   id              String      @id @default(cuid())
-  memberId        String
-  amount          Decimal     @db.Decimal(18, 2)
-  interestRate    Decimal     @db.Decimal(5, 2)
-  duration        Int         // in months
+  amount          Float
   purpose         String
+  interestRate    Float       @default(5.0)
+  durationMonths  Int
   status          LoanStatus  @default(PENDING)
-  appliedAt       DateTime    @default(now())
-  approvedAt      DateTime?
+  approvedBy      String?     // Admin wallet address
   disbursedAt     DateTime?
-  transactionHash String?
-  blockNumber     Int?
-
+  dueDate         DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
   // Relations
-  member          Member      @relation(fields: [memberId], references: [id], onDelete: Cascade)
-  repayments      Repayment[]
-
+  member          Member      @relation(fields: [memberId], references: [id])
+  memberId        String
+  repayments      Transaction[] @relation("LoanRepayments")
+  
+  @@index([memberId])
   @@map("loans")
-}
-
-model Repayment {
-  id              String   @id @default(cuid())
-  loanId          String
-  amount          Decimal  @db.Decimal(18, 2)
-  transactionHash String?
-  blockNumber     Int?
-  createdAt       DateTime @default(now())
-
-  // Relations
-  loan            Loan     @relation(fields: [loanId], references: [id], onDelete: Cascade)
-
-  @@map("repayments")
 }
 
 model Transaction {
   id              String          @id @default(cuid())
-  memberId        String
+  amount          Float
   type            TransactionType
-  amount          Decimal         @db.Decimal(18, 2)
-  description     String
-  transactionHash String?
-  blockNumber     Int?
+  description     String?
+  walletAddress   String?         // For blockchain transaction reference
+  txHash          String?         // Blockchain transaction hash
+  verified        Boolean         @default(false)
   createdAt       DateTime        @default(now())
-
+  updatedAt       DateTime        @updatedAt
+  
   // Relations
-  member          Member          @relation(fields: [memberId], references: [id], onDelete: Cascade)
-
+  member          Member          @relation(fields: [memberId], references: [id])
+  memberId        String
+  loan            Loan?           @relation("LoanRepayments", fields: [loanId], references: [id])
+  loanId          String?
+  
+  @@index([memberId])
+  @@index([loanId])
   @@map("transactions")
 }
 
 model Proposal {
-  id          String         @id @default(cuid())
-  title       String
-  description String
-  proposerId  String
-  status      ProposalStatus @default(ACTIVE)
-  createdAt   DateTime       @default(now())
-  expiresAt   DateTime
-
+  id              String          @id @default(cuid())
+  title           String
+  description     String
+  type            ProposalType
+  status          ProposalStatus  @default(ACTIVE)
+  votingEndDate   DateTime
+  implementedAt   DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
   // Relations
-  votes       Vote[]
-
+  proposer        Member          @relation(fields: [proposerId], references: [id])
+  proposerId      String
+  votes           Vote[]
+  
+  @@index([proposerId])
   @@map("proposals")
 }
 
 model Vote {
-  id         String   @id @default(cuid())
-  proposalId String
-  memberId   String
-  vote       Boolean  // true for yes, false for no
-  createdAt  DateTime @default(now())
-
+  id              String      @id @default(cuid())
+  choice          VoteOption
+  createdAt       DateTime    @default(now())
+  
   // Relations
-  proposal   Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
-  member     Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
-
-  @@unique([proposalId, memberId])
+  member          Member      @relation(fields: [memberId], references: [id])
+  memberId        String
+  proposal        Proposal    @relation(fields: [proposalId], references: [id])
+  proposalId      String
+  
+  @@unique([memberId, proposalId])
+  @@index([proposalId])
   @@map("votes")
 }
 
-enum LoanStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  DISBURSED
-  REPAID
+// Admin functionality
+model AdminLog {
+  id              String    @id @default(cuid())
+  action          String
+  details         String?
+  ipAddress       String?
+  createdAt       DateTime  @default(now())
+  
+  // Relations
+  admin           Member    @relation(fields: [adminId], references: [id])
+  adminId         String
+  
+  @@index([adminId])
+  @@map("admin_logs")
 }
 
-enum TransactionType {
-  DEPOSIT
-  WITHDRAWAL
-  LOAN_DISBURSEMENT
-  LOAN_REPAYMENT
+model Setting {
+  id              String    @id @default(cuid())
+  key             String    @unique
+  value           String
+  description     String?
+  lastUpdatedBy   String?   // Admin wallet address
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@map("settings")
 }
 
-enum ProposalStatus {
-  ACTIVE
-  PASSED
-  REJECTED
-  EXPIRED
+// Contract data tracking
+model ContractSync {
+  id                String    @id @default(cuid())
+  contractAddress   String    @unique
+  lastSyncedBlock   BigInt
+  lastSyncedAt      DateTime
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  @@map("contract_syncs")
 }

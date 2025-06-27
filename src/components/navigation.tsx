@@ -24,17 +24,19 @@ import {
   PiggyBank,
   CreditCard,
   Vote,
-  Users
+  Users,
+  UserPlus
 } from 'lucide-react';
 import { shortenAddress } from '@/lib/utils';
 
 export function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { isConnected, userAddress, isApprovedMember, isAdmin } = useAuth();
+  const { isConnected, userAddress, isApprovedMember, isAdmin, isMember } = useAuth();
   const { login, logout } = usePrivy();
 
   const navigationItems = [
     { href: '/', label: 'Dashboard', icon: Home, show: isConnected },
+    { href: '/join', label: 'Join SACCO', icon: UserPlus, show: isConnected && !isMember },
     { href: '/savings', label: 'Savings', icon: PiggyBank, show: isApprovedMember },
     { href: '/loans', label: 'Loans', icon: CreditCard, show: isApprovedMember },
     { href: '/governance', label: 'Governance', icon: Vote, show: isApprovedMember },

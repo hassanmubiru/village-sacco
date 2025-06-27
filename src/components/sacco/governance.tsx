@@ -38,7 +38,11 @@ interface Proposal {
   userVote?: boolean;
 }
 
-export function Governance() {
+interface GovernanceProps {
+  filter?: string;
+}
+
+export function Governance({ filter = 'active' }: GovernanceProps) {
   const { userAddress, isApprovedMember } = useAuth();
   const { createProposal, vote, getProposalInfo, nextProposalId } = useSaccoContract();
   
@@ -101,7 +105,18 @@ export function Governance() {
           }
         ];
         
-        setProposals(mockProposals);
+        // Filter proposals based on the filter prop
+        let filteredProposals = mockProposals;
+        
+        if (filter === 'active') {
+          filteredProposals = mockProposals.filter(p => p.status === 'active');
+        } else if (filter === 'past' || filter === 'passed') {
+          filteredProposals = mockProposals.filter(p => p.status === 'passed');
+        } else if (filter === 'rejected') {
+          filteredProposals = mockProposals.filter(p => p.status === 'rejected');
+        }
+        
+        setProposals(filteredProposals);
       } catch (error) {
         console.error('Error fetching proposals:', error);
       } finally {
@@ -112,7 +127,7 @@ export function Governance() {
     if (isApprovedMember) {
       fetchProposals();
     }
-  }, [isApprovedMember]);
+  }, [isApprovedMember, filter]);
 
   const handleCreateProposal = async () => {
     if (!proposalForm.title || !proposalForm.description) {

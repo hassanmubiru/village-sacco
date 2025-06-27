@@ -207,7 +207,18 @@ export default function DashboardPage() {
       <div className="min-h-screen">
         <Navigation />
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <MemberRegistration />
+          <div className="text-center mb-8">
+            <PiggyBank className="w-16 h-16 text-blue-600 mx-auto mb-6" />
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">
+              Join Village SACCO
+            </h1>
+            <p className="text-lg text-gray-600 mb-8">
+              Complete your registration to become a member of our savings and credit cooperative.
+            </p>
+            <Button asChild size="lg" className="mx-auto">
+              <Link href="/join">Register as Member</Link>
+            </Button>
+          </div>
         </div>
       </div>
     );

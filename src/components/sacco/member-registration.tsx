@@ -59,6 +59,7 @@ export function MemberRegistration() {
             email: data.email,
             phone: data.phone,
             nationalId: data.nationalId,
+            walletAddress: await window.ethereum?.request({ method: 'eth_accounts' }).then((accounts: string[]) => accounts[0])
           }),
         });
 

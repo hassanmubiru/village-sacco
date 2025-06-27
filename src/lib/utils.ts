@@ -89,3 +89,34 @@ export function isValidEmail(email: string): boolean {
 export function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+/**
+ * Safely converts a Date or timestamp to a BigInt representation of Unix seconds
+ * Uses Math.floor to ensure the value is an integer before conversion
+ * 
+ * @param date - Date object or timestamp to convert
+ * @returns BigInt representation of the date in Unix seconds
+ */
+export function dateToBigIntSeconds(date?: Date | number): bigint {
+  if (!date) {
+    // Default to current time if no date provided
+    return BigInt(Math.floor(Date.now() / 1000));
+  }
+  
+  // Convert Date object to timestamp if needed
+  const timestamp = date instanceof Date ? date.getTime() : date;
+  
+  // Convert to seconds and ensure it's an integer
+  return BigInt(Math.floor(timestamp / 1000));
+}
+
+/**
+ * Adds seconds to a BigInt timestamp
+ * 
+ * @param timestamp - Base timestamp as BigInt
+ * @param seconds - Number of seconds to add
+ * @returns New BigInt timestamp
+ */
+export function addSecondsToBigInt(timestamp: bigint, seconds: number): bigint {
+  return timestamp + BigInt(seconds);
+}

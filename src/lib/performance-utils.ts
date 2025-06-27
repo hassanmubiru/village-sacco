@@ -8,8 +8,8 @@ import { useCallback, useRef, useState, useEffect } from 'react';
  * @param decimals - Number of decimals (default 18 for ETH)
  * @returns A formatted string representation for display
  */
-export function formatBigInt(value: bigint | string | undefined, decimals = 18): string {
-  if (value === undefined) return '0';
+export function formatBigInt(value: bigint | string | undefined | null, decimals = 18): string {
+  if (value === undefined || value === null) return '0';
   
   try {
     // Convert string to bigint if needed

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { VILLAGE_SACCO_ABI, type MemberInfo, type LoanInfo, type ProposalInfo } from '@/lib/contract-abi';
 import { saccoFactory } from '@/lib/contract-factory';
+import { dateToBigIntSeconds, addSecondsToBigInt } from '@/lib/utils';
 
 // Safe wagmi imports with fallbacks
 let useReadContract: any, useWriteContract: any, useAccount: any;
@@ -218,7 +219,7 @@ export function useSaccoContract() {
       isApproved: true,
       totalSavings: BigInt(1000 * 10**18),
       totalLoansAmount: BigInt(0),
-      registrationDate: BigInt(Date.now() / 1000)
+      registrationDate: dateToBigIntSeconds()
     };
   };
 
@@ -243,7 +244,7 @@ export function useSaccoContract() {
       proposer: '0x1234567890123456789012345678901234567890',
       yesVotes: BigInt(15),
       noVotes: BigInt(3),
-      votingDeadline: BigInt(Date.now() / 1000 + 7 * 24 * 60 * 60),
+      votingDeadline: addSecondsToBigInt(dateToBigIntSeconds(), 7 * 24 * 60 * 60), // 7 days
       executed: false,
       passed: false
     };
