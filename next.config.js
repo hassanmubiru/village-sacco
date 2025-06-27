@@ -25,7 +25,6 @@ const nextConfig = {
   },
   
   // Performance optimizations
-  swcMinify: true, // Use SWC for minification (faster than Terser)
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production', // Remove console in production
   },
