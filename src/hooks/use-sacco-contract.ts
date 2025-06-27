@@ -1,23 +1,50 @@
 'use client';
 
 import { useState } from 'react';
+import { useReadContract, useWriteContract, useAccount } from 'wagmi';
+import { VILLAGE_SACCO_ABI, type MemberInfo, type LoanInfo, type ProposalInfo } from '@/lib/contract-abi';
+import { saccoFactory } from '@/lib/contract-factory';
 
-// Simplified contract hook without complex wagmi/viem dependencies
+const SACCO_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_SACCO_CONTRACT_ADDRESS as `0x${string}`;
+
 export function useSaccoContract() {
   const [isLoading, setIsLoading] = useState(false);
+  const { writeContract } = useWriteContract();
+  const { address } = useAccount();
 
-  // Mock contract data
+  // Mock contract data for development
   const contractBalance = BigInt(10000 * 10**18); // 10,000 ETH
   const totalMembers = BigInt(45);
   const minimumSavings = BigInt(10 * 10**18); // 10 ETH
   const nextLoanId = BigInt(5);
   const nextProposalId = BigInt(3);
 
-  // Mock contract functions
+  // Deploy a new SACCO contract
+  const deploySACCO = async (
+    privateKey: string,
+    name: string,
+    symbol: string,
+    adminAddress: string
+  ): Promise<string> => {
+    setIsLoading(true);
+    try {
+      const contractAddress = await saccoFactory.deploySACCO(
+        privateKey,
+        name,
+        symbol,
+        adminAddress
+      );
+      return contractAddress;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Contract write functions (using mock implementations)
   const registerMember = async ({ args }: { args: [string, string] }) => {
     setIsLoading(true);
     try {
-      // Simulate transaction
+      // Simulate blockchain transaction
       await new Promise(resolve => setTimeout(resolve, 2000));
       return {
         transactionHash: `0x${Math.random().toString(16).slice(2)}`,
@@ -159,7 +186,7 @@ export function useSaccoContract() {
   };
 
   // Mock data fetching functions
-  const getMemberInfo = async (address: string) => {
+  const getMemberInfo = async (memberAddress: string): Promise<MemberInfo | null> => {
     return {
       name: 'John Doe',
       email: 'john@example.com',
@@ -170,7 +197,7 @@ export function useSaccoContract() {
     };
   };
 
-  const getLoanInfo = async (loanId: number) => {
+  const getLoanInfo = async (loanId: number): Promise<LoanInfo | null> => {
     return {
       borrower: '0x1234567890123456789012345678901234567890',
       amount: BigInt(500 * 10**18),
@@ -184,7 +211,7 @@ export function useSaccoContract() {
     };
   };
 
-  const getProposalInfo = async (proposalId: number) => {
+  const getProposalInfo = async (proposalId: number): Promise<ProposalInfo | null> => {
     return {
       title: 'Increase minimum savings',
       description: 'Proposal to increase minimum savings requirement',
@@ -205,6 +232,8 @@ export function useSaccoContract() {
     minimumSavings,
     nextLoanId,
     nextProposalId,
+    // Deployment
+    deploySACCO,
     // Write functions - Member
     registerMember,
     depositSavings,

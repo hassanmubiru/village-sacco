@@ -17,12 +17,13 @@ import {
   Loader2,
   AlertCircle
 } from 'lucide-react';
+import { mockDeployVillageSACCO, getMockContractInfo, clearMockDeployment } from '@/lib/mock-deployment';
 
 export function ContractDeployment() {
   const { userAddress, isAdmin } = useAuth();
   const [isDeploying, setIsDeploying] = useState(false);
   const [deployedContract, setDeployedContract] = useState<string | null>(
-    process.env.NEXT_PUBLIC_SACCO_CONTRACT_ADDRESS || null
+    getMockContractInfo()?.address || process.env.NEXT_PUBLIC_SACCO_CONTRACT_ADDRESS || null
   );
   
   const [deploymentForm, setDeploymentForm] = useState({
@@ -45,23 +46,23 @@ export function ContractDeployment() {
     try {
       setIsDeploying(true);
       
-      // Simulate contract deployment
       toast.loading('Deploying smart contract...', { id: 'deploy' });
       
-      // Mock deployment process
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      // Use mock deployment for development
+      const contractAddress = await mockDeployVillageSACCO(
+        'mock-private-key', // In production, this would come from a secure source
+        deploymentForm.adminAddress || userAddress
+      );
       
-      // Mock contract address
-      const mockContractAddress = `0x${Math.random().toString(16).slice(2, 42)}`;
-      
-      setDeployedContract(mockContractAddress);
+      setDeployedContract(contractAddress);
       
       toast.success('Smart contract deployed successfully!', { id: 'deploy' });
       
       // In a real implementation, you would:
-      // 1. Use Thirdweb SDK to deploy the contract
-      // 2. Save the contract address to environment variables
-      // 3. Update the application configuration
+      // 1. Get the user's private key securely
+      // 2. Use actual deployment function
+      // 3. Update environment variables
+      // 4. Verify the contract on the blockchain
       
     } catch (error) {
       console.error('Contract deployment error:', error);
@@ -74,6 +75,12 @@ export function ContractDeployment() {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success('Copied to clipboard!');
+  };
+
+  const handleRedeploy = () => {
+    clearMockDeployment();
+    setDeployedContract(null);
+    toast.info('Ready to deploy a new contract');
   };
 
   if (!isAdmin) {
@@ -109,7 +116,7 @@ export function ContractDeployment() {
               <div className="flex items-center space-x-2">
                 <CheckCircle className="w-5 h-5 text-green-600" />
                 <Badge variant="default" className="bg-green-100 text-green-800">
-                  Deployed
+                  Deployed (Mock)
                 </Badge>
               </div>
               
@@ -142,12 +149,20 @@ export function ContractDeployment() {
               
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <h4 className="font-medium text-green-800 mb-2">
-                  ✅ Contract Successfully Deployed
+                  ✅ Contract Successfully Deployed (Mock)
                 </h4>
-                <p className="text-sm text-green-700">
-                  Your SACCO smart contract is live on Base Sepolia testnet. 
-                  All platform features are now fully functional.
+                <p className="text-sm text-green-700 mb-2">
+                  Your SACCO smart contract is ready for testing. 
+                  This is a mock deployment for development purposes.
                 </p>
+                <Button
+                  onClick={handleRedeploy}
+                  size="sm"
+                  variant="outline"
+                  className="mt-2"
+                >
+                  Deploy New Contract
+                </Button>
               </div>
             </div>
           ) : (
@@ -180,7 +195,7 @@ export function ContractDeployment() {
               <span>Deploy Smart Contract</span>
             </CardTitle>
             <CardDescription>
-              Deploy the SACCO smart contract to Base Sepolia testnet
+              Deploy the SACCO smart contract to Base Sepolia testnet (Mock)
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -231,13 +246,13 @@ export function ContractDeployment() {
               
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <h4 className="font-medium text-blue-800 mb-2">
-                  📋 Deployment Information
+                  📋 Deployment Information (Mock)
                 </h4>
                 <ul className="text-sm text-blue-700 space-y-1">
-                  <li>• Contract will be deployed to Base Sepolia testnet</li>
-                  <li>• Deployment requires ETH for gas fees</li>
-                  <li>• Process typically takes 1-2 minutes</li>
-                  <li>• Contract address will be automatically configured</li>
+                  <li>• This is a mock deployment for development</li>
+                  <li>• No real gas fees will be charged</li>
+                  <li>• Process takes a few seconds</li>
+                  <li>• Contract address will be automatically generated</li>
                 </ul>
               </div>
               
@@ -255,7 +270,7 @@ export function ContractDeployment() {
                 ) : (
                   <>
                     <Rocket className="w-4 h-4 mr-2" />
-                    Deploy Smart Contract
+                    Deploy Smart Contract (Mock)
                   </>
                 )}
               </Button>
@@ -263,55 +278,6 @@ export function ContractDeployment() {
           </CardContent>
         </Card>
       )}
-
-      {/* Contract Features */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Smart Contract Features</CardTitle>
-          <CardDescription>
-            Features available in the deployed SACCO contract
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <h4 className="font-medium">Member Management</h4>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>• Member registration and approval</li>
-                <li>• Role-based access control</li>
-                <li>• Member status tracking</li>
-              </ul>
-            </div>
-            
-            <div className="space-y-4">
-              <h4 className="font-medium">Financial Operations</h4>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>• Savings deposits and withdrawals</li>
-                <li>• Loan requests and disbursements</li>
-                <li>• Automated interest calculations</li>
-              </ul>
-            </div>
-            
-            <div className="space-y-4">
-              <h4 className="font-medium">Governance</h4>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>• Proposal creation and voting</li>
-                <li>• Democratic decision making</li>
-                <li>• Transparent vote tracking</li>
-              </ul>
-            </div>
-            
-            <div className="space-y-4">
-              <h4 className="font-medium">Security Features</h4>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>• Reentrancy protection</li>
-                <li>• Pausable functionality</li>
-                <li>• Multi-signature controls</li>
-              </ul>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

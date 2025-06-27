@@ -1,46 +1,137 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  experimental: {
-    esmExternals: 'loose'
+import type { NextConfig } from 'next';
+import type { Configuration } from 'webpack';
+
+const nextConfig: NextConfig = {
+  // React strict mode
+  reactStrictMode: true,
+  // TypeScript configuration
+  typescript: {
+    ignoreBuildErrors: false,
   },
-  webpack: (config, { isServer }) => {
-    // Fix for viem and wagmi
-    config.externals = config.externals || [];
+  
+  // ESLint configuration
+  eslint: {
+    ignoreDuringBuilds: false,
+  },
+  
+  // Image optimization
+  images: {
+    domains: [],
+    formats: ['image/webp', 'image/avif'],
+  },
+  
+  // Compiler optimizations
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production' ? {
+      exclude: ['error', 'warn'],
+    } : false,
+  },
+  
+  // Experimental features for Next.js 15
+  experimental: {
+    optimizePackageImports: [
+      'lucide-react', 
+      '@radix-ui/react-icons',
+      'date-fns',
+      'recharts'
+    ],
     
+    turbo: {
+      rules: {
+        '*.svg': {
+          loaders: ['@svgr/webpack'],
+          as: '*.js',
+        },
+      },
+    },
+    
+    serverActions: {
+      allowedOrigins: ['localhost:3000'],
+    },
+  },
+  
+  // Webpack configuration with proper types
+  webpack: (config: Configuration, { isServer }: { isServer: boolean }) => {
+    // Optimize bundle for client-side
     if (!isServer) {
-      config.externals.push({
-        'utf-8-validate': 'commonjs utf-8-validate',
-        'bufferutil': 'commonjs bufferutil',
-      });
+      config.resolve = {
+        ...config.resolve,
+        fallback: {
+          ...config.resolve?.fallback,
+          fs: false,
+          net: false,
+          tls: false,
+          crypto: false,
+        },
+      };
     }
 
-    // Handle missing modules
-    config.resolve.fallback = {
-      ...config.resolve.fallback,
-      fs: false,
-      net: false,
-      tls: false,
-      crypto: false,
+    // Handle ESM packages
+    config.experiments = {
+      ...config.experiments,
+      topLevelAwait: true,
     };
 
-    // Add module resolution for viem
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      'viem/_cjs/actions/public/simulateContract.js': 'viem/actions',
-      'viem/_cjs': 'viem',
+    // Optimize for blockchain libraries
+    config.resolve = {
+      ...config.resolve,
+      alias: {
+        ...config.resolve?.alias,
+        'thirdweb/chains': 'thirdweb/chains',
+        'thirdweb/react': 'thirdweb/react',
+      },
     };
-
-    // Ignore specific warnings
-    config.ignoreWarnings = [
-      { module: /node_modules\/viem/ },
-      { module: /node_modules\/@safe-global/ },
-    ];
 
     return config;
   },
-  // Suppress hydration warnings during development
-  reactStrictMode: true,
-  swcMinify: true,
+
+  // Headers for security and performance
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()',
+          },
+        ],
+      },
+      {
+        source: '/api/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, must-revalidate',
+          },
+        ],
+      },
+    ];
+  },
+
+  async redirects() {
+    return [];
+  },
+
+  async rewrites() {
+    return [];
+  },
 };
 
-module.exports = nextConfig;
+export default nextConfig;

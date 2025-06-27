@@ -1,9 +1,16 @@
-import { OnchainKitProvider } from '@coinbase/onchainkit';
-import { base, baseSepolia } from 'wagmi/chains';
+import { baseSepolia } from 'wagmi/chains';
 
 export const onchainKitConfig = {
   apiKey: process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY!,
-  chain: baseSepolia, // Use baseSepolia for testing, base for production
+  chain: baseSepolia,
 };
 
-export { base, baseSepolia }
+export { baseSepolia };
+
+// Wagmi configuration
+export const wagmiConfig = {
+  chains: [baseSepolia],
+  transports: {
+    [baseSepolia.id]: 'https://sepolia.base.org',
+  },
+};
