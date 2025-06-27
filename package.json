@@ -17,7 +17,11 @@
     "db:generate": "npx prisma generate",
     "db:studio": "npx prisma studio",
     "db:seed": "node prisma/seed.js",
-    "postbuild": "npx prisma generate"
+    "postbuild": "npx prisma generate",
+    "analyze": "ANALYZE=true npm run build",
+    "build:prod": "NODE_ENV=production npm run build",
+    "start:prod": "NODE_ENV=production npm run start",
+    "preload": "NODE_ENV=production next build && node ./scripts/preload-pages.js"
   },
   "dependencies": {
     "@coinbase/onchainkit": "^0.38.13",
@@ -38,6 +42,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "lodash-es": "^4.17.21",
     "lucide-react": "^0.451.0",
     "next": "^15.3.4",
     "next-themes": "^0.3.0",
@@ -58,6 +63,8 @@
     "@eslint/config-array": "^0.18.0",
     "@eslint/eslintrc": "^3.1.0",
     "@eslint/object-schema": "^2.1.4",
+    "@next/bundle-analyzer": "^15.3.4",
+    "@types/lodash-es": "^4.17.12",
     "@types/node": "^22.7.5",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",

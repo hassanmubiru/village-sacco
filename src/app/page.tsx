@@ -1,26 +1,37 @@
+// Import lightweight UI components normally
 'use client';
 
 import { useEffect, useState, memo, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { useSaccoContract } from '@/hooks/use-sacco-contract';
 import { Navigation } from '@/components/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  PiggyBank, 
-  CreditCard, 
-  Users, 
-  Vote, 
-  TrendingUp, 
-  Shield,
-  Wallet,
-  AlertCircle
-} from 'lucide-react';
-import { formatCurrency, formatDate } from '@/lib/utils';
-import { MemberRegistration } from '@/components/sacco/member-registration';
-import { ConnectWallet } from '@/components/connect-wallet';
+import { Badge } from '@/components/ui/badge';
+import dynamic from 'next/dynamic';
+
+// Dynamically import heavier components
+const Card = dynamic(() => import('@/components/ui/card').then(mod => ({ 
+  default: mod.Card,
+  CardContent: mod.CardContent,
+  CardDescription: mod.CardDescription,
+  CardHeader: mod.CardHeader,
+  CardTitle: mod.CardTitle
+})), {
+  ssr: false,
+  loading: () => <div className="rounded-lg border p-4 shadow-sm"><Skeleton className="h-32" /></div>
+});
+
+// Dynamic import for contract hooks - only loaded when needed
+const DashboardContent = dynamic(() => 
+  import('./dashboard-content').then(mod => mod.DashboardContent), {
+  ssr: false,
+  loading: () => <DashboardSkeleton />
+});
+
+// Lazy load icons
+const IconComponents = dynamic(() => import('@/components/icons'), {
+  ssr: false
+});
 
 // Memoized stat card component for better performance
 const StatCard = memo(({ title, value, description, icon: Icon, trend }: {
@@ -40,7 +51,7 @@ const StatCard = memo(({ title, value, description, icon: Icon, trend }: {
       <p className="text-xs text-muted-foreground">{description}</p>
       {trend && (
         <div className="flex items-center pt-1">
-          <TrendingUp className="h-3 w-3 text-green-600 mr-1" />
+          <IconComponents.TrendingUp className="h-3 w-3 text-green-600 mr-1" />
           <span className="text-xs text-green-600">{trend}</span>
         </div>
       )}
@@ -79,27 +90,27 @@ export default function DashboardPage() {
       title: "Total Balance",
       value: contractBalance ? formatCurrency(Number(contractBalance)) : "Loading...",
       description: "Total SACCO funds",
-      icon: PiggyBank,
+      icon: IconComponents.PiggyBank,
       trend: "+12% from last month"
     },
     {
       title: "Total Members",
       value: totalMembers?.toString() || "0",
       description: "Registered members",
-      icon: Users,
+      icon: IconComponents.Users,
       trend: "+5 new this week"
     },
     {
       title: "Active Loans",
       value: nextLoanId ? (Number(nextLoanId) - 1).toString() : "0",
       description: "Current loans",
-      icon: CreditCard
+      icon: IconComponents.CreditCard
     },
     {
       title: "Proposals",
       value: nextProposalId ? (Number(nextProposalId) - 1).toString() : "0",
       description: "Active proposals",
-      icon: Vote
+      icon: IconComponents.Vote
     }
   ], [contractBalance, totalMembers, nextLoanId, nextProposalId]);
 
@@ -129,7 +140,7 @@ export default function DashboardPage() {
         <Navigation />
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center">
-            <PiggyBank className="w-16 h-16 text-blue-600 mx-auto mb-6" />
+            <IconComponents.PiggyBank className="w-16 h-16 text-blue-600 mx-auto mb-6" />
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
               Welcome to Village SACCO
             </h1>

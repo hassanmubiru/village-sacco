@@ -18,6 +18,26 @@ import {
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
 
+// DashboardSkeleton for loading states
+export function DashboardSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[1, 2, 3, 4].map((item) => (
+          <div key={item} className="h-[120px] rounded-lg bg-muted animate-pulse" />
+        ))}
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="h-[200px] rounded-lg bg-muted animate-pulse" />
+        <div className="space-y-4">
+          <div className="h-[90px] rounded-lg bg-muted animate-pulse" />
+          <div className="h-[90px] rounded-lg bg-muted animate-pulse" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function DashboardContent() {
   const { memberInfo, isApprovedMember } = useAuth();
   const { 
@@ -29,13 +49,25 @@ export default function DashboardContent() {
   } = useSaccoContract();
 
   const [mounted, setMounted] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     setMounted(true);
+    
+    // Use a shorter timeout or remove artificial delays
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 300);
+    
+    return () => clearTimeout(timer);
   }, []);
 
   if (!mounted) {
-    return null; // Prevent hydration mismatch
+    return <DashboardSkeleton />; // Show skeleton instead of null
+  }
+  
+  if (isLoading) {
+    return <DashboardSkeleton />;
   }
 
   return (

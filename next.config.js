@@ -1,7 +1,11 @@
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // React strict mode
-  reactStrictMode: true,
+  // React strict mode (turn off in production for better performance)
+  reactStrictMode: process.env.NODE_ENV === 'development',
   
   // TypeScript configuration
   typescript: {
@@ -17,6 +21,13 @@ const nextConfig = {
   images: {
     domains: [],
     formats: ['image/webp', 'image/avif'],
+    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
+  },
+  
+  // Performance optimizations
+  swcMinify: true, // Use SWC for minification (faster than Terser)
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production', // Remove console in production
   },
   
   // Compiler optimizations
@@ -126,3 +137,6 @@ const nextConfig = {
     return [];
   },
 };
+
+// Export with bundle analyzer wrapper
+module.exports = withBundleAnalyzer(nextConfig);
