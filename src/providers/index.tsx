@@ -1,24 +1,37 @@
 'use client';
 
-import { ReactNode } from 'react';
-import { ThirdwebProvider } from 'thirdweb/react';
-import { PrivyProvider } from '@privy-io/react-auth';
+import { ReactNode, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+// Dynamically import heavy blockchain providers
+const ThirdwebProvider = dynamic(() => 
+  import('thirdweb/react').then(mod => mod.ThirdwebProvider), {
+  ssr: false,
+});
+
+const PrivyProvider = dynamic(() => 
+  import('@privy-io/react-auth').then(mod => mod.PrivyProvider), {
+  ssr: false,
+});
 
 interface ProvidersProps {
   children: ReactNode;
 }
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 60 * 1000,
-      retry: 3,
-    },
-  },
-});
-
+// Create a new QueryClient for each request in client components
 export function Providers({ children }: ProvidersProps) {
+  // Memoize query client to prevent recreating on each render
+  const queryClient = useMemo(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 60 * 1000,
+        retry: 3,
+        refetchOnWindowFocus: false, // Disable unneeded refetches
+      },
+    },
+  }), []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <PrivyProvider

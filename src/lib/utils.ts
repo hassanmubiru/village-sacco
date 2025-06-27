@@ -7,16 +7,28 @@ export function cn(...inputs: ClassValue[]) {
 
 export function formatCurrency(amount: number | string | bigint): string {
   let num: number;
-  if (typeof amount === 'bigint') {
-    // Convert from wei to ETH (divide by 10^18)
-    num = Number(amount) / (10 ** 18);
-  } else {
-    num = typeof amount === 'string' ? parseFloat(amount) : amount;
+  
+  try {
+    if (typeof amount === 'bigint') {
+      // Safely convert bigint to number to avoid precision errors
+      // First divide by 10^14 to get to a safe number range, then by 10^4 for the final conversion
+      const divisor1 = BigInt(10 ** 14);
+      const divisor2 = 10 ** 4;
+      const safeNum = Number(amount / divisor1) / divisor2;
+      num = safeNum;
+    } else {
+      num = typeof amount === 'string' ? parseFloat(amount) : amount;
+    }
+    
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      maximumFractionDigits: 2,
+    }).format(num);
+  } catch (error) {
+    console.error('Error formatting currency:', error);
+    return '$0.00'; // Fallback value
   }
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(num);
 }
 
 export function formatDate(date: Date | string | number): string {

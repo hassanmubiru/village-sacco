@@ -2,83 +2,6 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
 });
 
-// Import next-pwa for Progressive Web App support
-const withPWA = require('next-pwa')({
-  dest: 'public',
-  disable: process.env.NODE_ENV === 'development',
-  register: true,
-  skipWaiting: true,
-  // PWA caching strategies
-  runtimeCaching: [
-    {
-      urlPattern: /^https:\/\/fonts\.(?:gstatic)\.com\/.*/i,
-      handler: 'CacheFirst',
-      options: {
-        cacheName: 'google-fonts-webfonts',
-        expiration: {
-          maxEntries: 4,
-          maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
-        },
-      },
-    },
-    {
-      urlPattern: /\.(?:eot|otf|ttc|ttf|woff|woff2|font.css)$/i,
-      handler: 'CacheFirst',
-      options: {
-        cacheName: 'static-font-assets',
-        expiration: {
-          maxEntries: 4,
-          maxAgeSeconds: 7 * 24 * 60 * 60, // 7 days
-        },
-      },
-    },
-    {
-      urlPattern: /\.(?:jpg|jpeg|gif|png|svg|ico|webp)$/i,
-      handler: 'CacheFirst',
-      options: {
-        cacheName: 'static-image-assets',
-        expiration: {
-          maxEntries: 64,
-          maxAgeSeconds: 7 * 24 * 60 * 60, // 7 days
-        },
-      },
-    },
-    {
-      urlPattern: /^https:\/\/base\.org\/api\/.*/i,
-      handler: 'NetworkFirst',
-      options: {
-        cacheName: 'base-api',
-        expiration: {
-          maxEntries: 16,
-          maxAgeSeconds: 60 * 60, // 1 hour
-        },
-      },
-    },
-    {
-      urlPattern: /\/api\/.*/i,
-      handler: 'NetworkFirst',
-      options: {
-        cacheName: 'apis',
-        expiration: {
-          maxEntries: 16,
-          maxAgeSeconds: 60 * 5, // 5 minutes
-        },
-      },
-    },
-    {
-      urlPattern: /(.*)/i,
-      handler: 'NetworkFirst',
-      options: {
-        cacheName: 'default',
-        expiration: {
-          maxEntries: 32,
-          maxAgeSeconds: 60 * 60 * 24, // 1 day
-        },
-      },
-    },
-  ],
-});
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // React strict mode (turn off in production for better performance)
@@ -206,5 +129,5 @@ const nextConfig = {
   }
 };
 
-// Export with both bundle analyzer and PWA features
-module.exports = withBundleAnalyzer(withPWA(nextConfig));
+// Export with bundle analyzer wrapper
+module.exports = withBundleAnalyzer(nextConfig);
